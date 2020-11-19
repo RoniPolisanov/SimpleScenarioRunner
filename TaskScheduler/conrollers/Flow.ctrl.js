@@ -39,7 +39,7 @@ app.post('/add', async (req, res) => {
 
 
             if (!flowObj.isError) {
-                const flowRes = await schedule();
+                const flowRes = await schedule(flowObj);
                 return res.status(200).send(flowRes);
             }
 
@@ -52,19 +52,15 @@ app.post('/add', async (req, res) => {
     }
 });
 
-const schedule = async () => {
+const schedule = async (flowObj) => {
     return new Promise(resolve => {
-        self.userid = JSON.parse(sessionStorage.getItem('userDetails'));
-
-        // Get the user details from database
-        axios.post(`${process.env.HOST_NAME}:${process.env.EXECUTIVE_PORT}/task/schedule`)
-            .then(userResponse => {
-                self.setState({ userDetails: userResponse.data, loading: false });
-                console.log('Menu was loaded successfully');
-                resolve(userResponse.data);
+        axios.post(`${process.env.HOST_NAME}:${process.env.EXECUTIVE_PORT}/task/schedule`, flowObj)
+            .then(response => {
+                console.log('Flow was scheduld successfully');
+                resolve(response.data);
             })
-            .catch(error => {
-                fetchDataHandleError(error);
+            .catch(err => {
+                console.log(err);
             });
     });
 }
