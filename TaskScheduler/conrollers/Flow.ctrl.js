@@ -32,14 +32,19 @@ app.post('/add', async (req, res) => {
     try {
         let body = req.body;
 
+        console.log(req.body);
+
         if (body instanceof Object) {
+
             let item = Object.assign({}, body);
 
             let flowObj = (new Flow(item)).initFlow();
 
 
             if (!flowObj.isError) {
+                console.log("RONI11")
                 const flowRes = await schedule(flowObj);
+                console.log("RONI33")
                 return res.status(200).send(flowRes);
             }
 
@@ -47,20 +52,21 @@ app.post('/add', async (req, res) => {
         }
     }
     catch (err) {
-        console.log(err);
+        // console.log(err);
         return res.status(404).send(err);
     }
 });
 
 const schedule = async (flowObj) => {
+    console.log("RONI22")
     return new Promise(resolve => {
-        axios.post(`${process.env.HOST_NAME}:${process.env.EXECUTIVE_PORT}/task/schedule`, flowObj)
+        axios.post(`${process.env.HOST_NAME}:${process.env.EXECUTIVE_PORT}/task/schedule`, {...flowObj})
             .then(response => {
                 console.log('Flow was scheduld successfully');
                 resolve(response.data);
             })
             .catch(err => {
-                console.log(err);
+                // console.log(err);
             });
     });
 }

@@ -3,70 +3,129 @@ const app = express.Router();
 const axios = require('axios');
 const ERROR = require('../enum').ERROR;
 const SUCCESS = require('../enum').SUCCESS;
+const TASK_RUNTIME = 9;
+const STOP = 'stop';
 
-let Flow = require('../services/Flow');
 let Task = require('../services/Task');
+let ExceptionFlow = require('../services/ExceptionFlow');
 
-
-// *** ASYNC + ERROR HANDLING***
-
-app.get('/healthCheck', async (req, res) => {
-
-})
-
-// Get the sserver status and local flow list
+// Get the server status
 app.get('/status', async (req, res) => {
     try {
         let example = {
             up_time: Math.floor(process.uptime())
-          };
+        };
 
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
 
         res.end(JSON.stringify(example));
     }
+
     catch (err) {
-        console.log(err);
+        console.log(err.message);
         return res.status(404).send(err);
     }
 });
 
-// *** ASYNC + ERROR HANDLING***
-app.post('/add', async (req, res) => {
-    let body = req.body;
+app.post('/schedule', async (req, res) => {
+    try {
+        let flow = req.body.item;
+        let item = Object.assign({}, flow.states[`${flow.startAt}`]);
+        let exceptionFlow = new ExceptionFlow();
 
-    if(body instanceof Object){
-        let item = Object.assign({}, body);
+        if (item instanceof Object) {
 
-        let flowObj = (new Flow(item)).initFlow();
+            // FIRST TASK START POINT - We need to separate between first operation "startAt" field for the reason of flow structure
+            let taskObj = new Task(item);
+            let executedTask = await taskObj.executeTask();
+            await checkError(taskObj, executedTask)
+            checkException(executedTask, exceptionFlow);
 
-        
-        if(!flowObj.isError){
-            const flowRes = await startFlow();
-            return res.status(200).send(flowRes);
+            // Scheduling each task by 'next' indicator
+            while (item.next !== STOP) {
+                item = Object.assign({}, flow.states[`${item.next}`]);
+
+                if (item instanceof Object) {
+
+                    taskObj = new Task(item);
+                    executedTask = await taskObj.executeTask();
+
+                    await checkError(taskObj, executedTask)
+                    checkException(executedTask, exceptionFlow);
+
+                }
+            }
+
+            let temp_ef = exceptionFlow.getFlow();
+            console.log("RONIIIIIIIIIIIIII");
+            console.log(temp_ef);
+            if (temp_ef.startAt) {
+                await dispatchExceptionFlow(temp_ef);
+            }
+
+            return res.status(200).send({ message: "The flow, including the tasks was sheduled successfully" });
+
         }
-        
-        return res.status(500).send(flowObj);
+
+
+
+        return res.status(500).send(req.body);
     }
-    
+
+    catch (err) {
+        console.log(err.message);
+        return res.status(404).send(err);
+    }
 });
 
-const startFlow = async () => {
+const dispatch = async (taskObj) => {
     return new Promise(resolve => {
-        self.userid = JSON.parse(sessionStorage.getItem('userDetails'));
+        axios.post(`${process.env.HOST_NAME}:${process.env.MONITOR_PORT}/monitor/task`, taskObj.item)
+            .then(response => {
+                console.info(`[*] ${taskObj.item.name} was scheduld successfully [*]`);
+                resolve(response);
+            })
+            .catch(err => {
+                console.log(err.message);
+            });
+    });
+}
+
+const checkException = (executedTask, exceptionFlow) => {
+    if (executedTask.item.runtime > TASK_RUNTIME) {
         
-        // Get the user details from database
-        axios.post(`http://localhost:${process.env.EXECUTIVE_PORT}/flo`)
-        .then(userResponse => {
-            self.setState({ userDetails: userResponse.data, loading: false });
-            console.log('Menu was loaded successfully');
-            resolve(userResponse.data);
-          })
-          .catch(error => {
-            fetchDataHandleError(error);
-          });
-      });    
+        exceptionFlow.addTask(executedTask);
+        console.log(`[*] ${executedTask.item.name} added to exception flow [*]`);
+    }
+}
+
+const checkError = async (taskObj, executedTask) => {
+    if (!taskObj.isError) {
+        return await dispatch(executedTask);
+    }
+    console.log(`[*] Error in ${executedTask.item.name} structure [*]`);
+}
+
+const dispatchExceptionFlow = async (exceptionFlow) => {
+    console.log("Starting the exception flow");    
+    
+    let item = Object.assign({}, exceptionFlow.states[`${flow.startAt}`]);
+    let taskObj = new Task(item);
+    let executedTask = await taskObj.executeTask();
+
+    while (exceptionFlow.next !== STOP) {
+        item = Object.assign({}, flow.states[`${item.next}`]);
+
+        if (item instanceof Object) {
+
+            taskObj = new Task(item);
+            executedTask = await taskObj.executeTask();
+
+        }
+    }
+    console.log("Fine the exception flow");    
+
 }
 
 module.exports = app;
