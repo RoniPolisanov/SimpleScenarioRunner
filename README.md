@@ -4,7 +4,7 @@
  [Roni Polisanov](https://github.com/RoniPolisanov)<br>
 
 ### Design Architecture
-<img src="https://i.ibb.co/27xNw76/Task-Manager-1.png" width="144px"><br>
+<img src="https://i.ibb.co/27xNw76/Task-Manager-1.png" width="880px"><br>
 
 ### API
 <b> TaskScheduler </b> - <br>
