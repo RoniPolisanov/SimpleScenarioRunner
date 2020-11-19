@@ -1,15 +1,9 @@
-const { resolve } = require("path");
-
 const { ERROR } = require("../enum");
 const { SUCCESS } = require("../enum");
 
 
 class Task {
     constructor(item) {
-        this.taskName = '';
-        this.resolver = '';
-        this.next = '';
-        this.exception = '';
 
         this.originalTask = JSON.parse(JSON.stringify(item));
         this.formattedTask = {};
@@ -30,7 +24,7 @@ class Task {
     // Simple Check task format structure validation
     validateTask() {
         if (this.originalTask) {
-            if (!this.originalTask.hasOwnProperty('resolver')) {
+            if (!this.originalTask.hasOwnProperty('resolver') && !this.originalTask.hasOwnProperty('name')) {
                 this.code = ERROR.TASK_NAME;
                 return this.code;
             }
@@ -49,7 +43,7 @@ class Task {
 
     createTask() {
         // Very simple random unique ID generator
-        this.formattedTask.name = this.originalTask.resolver;
+        this.formattedTask.name = this.originalTask.resolver || this.originalTask.name;
         this.formattedTask.next = this.originalTask.next;
         this.formattedTask.exception = this.originalTask.exception;
         this.formattedTask.runtime = 0;

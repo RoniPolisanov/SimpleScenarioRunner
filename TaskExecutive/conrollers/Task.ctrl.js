@@ -58,17 +58,12 @@ app.post('/schedule', async (req, res) => {
             }
 
             let temp_ef = exceptionFlow.getFlow();
-            console.log("RONIIIIIIIIIIIIII");
-            console.log(temp_ef);
             if (temp_ef.startAt) {
                 await dispatchExceptionFlow(temp_ef);
             }
 
             return res.status(200).send({ message: "The flow, including the tasks was sheduled successfully" });
-
         }
-
-
 
         return res.status(500).send(req.body);
     }
@@ -94,8 +89,8 @@ const dispatch = async (taskObj) => {
 
 const checkException = (executedTask, exceptionFlow) => {
     if (executedTask.item.runtime > TASK_RUNTIME) {
-        
-        exceptionFlow.addTask(executedTask);
+
+        exceptionFlow.addTask(JSON.parse(JSON.stringify(executedTask)));
         console.log(`[*] ${executedTask.item.name} added to exception flow [*]`);
     }
 }
@@ -109,18 +104,21 @@ const checkError = async (taskObj, executedTask) => {
 
 const dispatchExceptionFlow = async (exceptionFlow) => {
     console.log("Starting the exception flow");    
-    
-    let item = Object.assign({}, exceptionFlow.states[`${flow.startAt}`]);
+
+    let item = Object.assign({}, exceptionFlow.states[`${exceptionFlow.startAt}`]);
     let taskObj = new Task(item);
     let executedTask = await taskObj.executeTask();
 
-    while (exceptionFlow.next !== STOP) {
-        item = Object.assign({}, flow.states[`${item.next}`]);
+    await dispatch(executedTask);
+
+    while (executedTask.item.next != STOP) {
+        item = Object.assign({}, exceptionFlow.states[`${item.next}`]);
 
         if (item instanceof Object) {
 
             taskObj = new Task(item);
             executedTask = await taskObj.executeTask();
+            await dispatch(executedTask);
 
         }
     }

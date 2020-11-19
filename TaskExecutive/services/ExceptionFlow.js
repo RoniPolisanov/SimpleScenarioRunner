@@ -17,18 +17,14 @@ class ExceptionFlow{
     }
 
     addTask(task){
-        console.log(task)
-        let taskName = this.exceptionFlow.states[`${Object.keys(task)[0]}`];
-        console.log(Object.keys(task))
+        let taskName = task.item.name;
 
-        this.exceptionFlow.states[`${taskName}`] = task;
+        this.exceptionFlow.states[`${taskName}`] = task.item;
         
         // Initialize exception flow 'startAt' first task
         if(!this.exceptionFlow.startAt){
             this.exceptionFlow.states[STOP] = {"end": true};
-            this.exceptionFlow.startAt = taskName;
-            console.log(this.exceptionFlow.startAt)
-            console.log(taskName)
+            this.exceptionFlow.startAt = task.item.name;
 
             this.exceptionFlow.states[`${taskName}`].next = STOP;
 
