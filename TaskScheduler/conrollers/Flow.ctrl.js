@@ -44,8 +44,8 @@ app.post('/add', async (req, res) => {
                 return res.status(200).send(flowRes);
             }
 
-            return res.status(500).send(flowObj);
         }
+        return res.status(500).send(flowObj);
     }
     catch (err) {
         console.log(err);
