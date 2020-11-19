@@ -31,13 +31,14 @@ app.get('/status', async (req, res) => {
 app.post('/schedule', async (req, res) => {
     try {
         let flow = req.body.item;
+        
         let item = Object.assign({}, flow.states[`${flow.startAt}`]);
         let exceptionFlow = new ExceptionFlow();
 
         if (item instanceof Object) {
 
             // FIRST TASK START POINT - We need to separate between first operation "startAt" field for the reason of flow structure
-            let taskObj = new Task(item);
+            let taskObj = new Task(item, flow);
             let executedTask = await taskObj.executeTask();
             await checkError(taskObj, executedTask)
             checkException(executedTask, exceptionFlow);
@@ -48,7 +49,7 @@ app.post('/schedule', async (req, res) => {
 
                 if (item instanceof Object) {
 
-                    taskObj = new Task(item);
+                    taskObj = new Task(item, flow);
                     executedTask = await taskObj.executeTask();
 
                     await checkError(taskObj, executedTask)
@@ -106,7 +107,7 @@ const dispatchExceptionFlow = async (exceptionFlow) => {
     console.log("Starting the exception flow");    
 
     let item = Object.assign({}, exceptionFlow.states[`${exceptionFlow.startAt}`]);
-    let taskObj = new Task(item);
+    let taskObj = new Task(item, exceptionFlow);
     let executedTask = await taskObj.executeTask();
 
     await dispatch(executedTask);
@@ -116,7 +117,7 @@ const dispatchExceptionFlow = async (exceptionFlow) => {
 
         if (item instanceof Object) {
 
-            taskObj = new Task(item);
+            taskObj = new Task(item, exceptionFlow);
             executedTask = await taskObj.executeTask();
             await dispatch(executedTask);
 

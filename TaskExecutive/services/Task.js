@@ -3,11 +3,11 @@ const { SUCCESS } = require("../enum");
 
 
 class Task {
-    constructor(item) {
+    constructor(item, flow) {
 
         this.originalTask = JSON.parse(JSON.stringify(item));
         this.formattedTask = {};
-
+        this.originalFlow = flow;
         this.code = {};
 
         this.initTask();
@@ -47,7 +47,10 @@ class Task {
         this.formattedTask.next = this.originalTask.next;
         this.formattedTask.exception = this.originalTask.exception;
         this.formattedTask.runtime = 0;
-
+        this.formattedTask.flowId = this.originalFlow.flowId;
+        this.formattedTask.flowName = this.originalFlow.flowName;
+        this.formattedTask.flowStartTime = this.originalFlow.flowStartTime;
+        this.formattedTask.flowExecutionTime = this.originalFlow.flowExecutionTime;
     }
 
     executeTask() {

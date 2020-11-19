@@ -48,11 +48,13 @@ class Flow {
     // Create the new flow format
     createFlow() {
         // Very simple random unique ID generator
-        this.formattedFlow.id = `${new Date().getTime()}`;
-        this.formattedFlow.name = this.originalFlow.flow;
+        this.formattedFlow.flowId = `${new Date().getTime()}`;
+        this.formattedFlow.flowName = this.originalFlow.flow;
         this.formattedFlow.comment = this.originalFlow.comment;
         this.formattedFlow.startAt = this.originalFlow.startAt;
         this.formattedFlow.states = Object.assign({}, this.originalFlow.states);
+        this.formattedFlow.flowStartTime = new Date().getTime();
+        this.formattedFlow.flowExecutionTime = '';
 
         return { isError: false, code: this.code, item: this.formattedFlow };
     }

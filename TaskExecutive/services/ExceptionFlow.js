@@ -9,11 +9,14 @@ class ExceptionFlow{
     }
 
     createFlow(){
-        this.exceptionFlow.id = `${new Date().getTime()}`;
-        this.exceptionFlow.name = 'Exception-flow';
         this.exceptionFlow.comment = 'The Exception POC flow';
         this.exceptionFlow.startAt = '';
         this.exceptionFlow.states = {};
+        this.exceptionFlow.flowId = `${new Date().getTime()}`;
+        this.exceptionFlow.flowName = 'Exception-flow';
+        this.exceptionFlow.flowStartTime = new Date().getTime();
+        this.exceptionFlow.flowExecutionTime = '';
+
     }
 
     addTask(task){

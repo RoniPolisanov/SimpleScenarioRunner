@@ -27,15 +27,12 @@ app.get('/status', async (req, res) => {
 
 app.post('/task', async (req, res) => {
     try {
-        console.log(req.body);
         let item = req.body;
 
         new Monitor(item);
- 
+
         return res.status(200).send(item);
 
-        
-        // return res.status(500).send(taskObj);
     }
 
     catch (err) {
